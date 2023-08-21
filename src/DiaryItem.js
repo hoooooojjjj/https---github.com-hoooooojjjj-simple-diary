@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const DiaryItem = ({
   author,
@@ -8,8 +8,10 @@ const DiaryItem = ({
   id,
   onRemove,
   onEdit,
-  diaryData,
 }) => {
+  useEffect(() => {
+    console.log(`${author}의 일기 렌더`);
+  });
   const editTextarea = useRef();
   const [localContent, setlocalContent] = useState(content); // textarea의 value를 상태로 만듦. 입력값은 항상 state로 관리
 
@@ -89,4 +91,4 @@ const DiaryItem = ({
   );
 };
 
-export default DiaryItem;
+export default React.memo(DiaryItem);

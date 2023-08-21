@@ -1,8 +1,8 @@
 import "./App.css";
 import DiaryEditor from "./DiaryEdtor";
 import DiaryList from "./DiaryList";
-import { useEffect, useMemo, useRef, useState } from "react";
-import OptimizeTest from "./OptimizeTest";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+// import OptimizeTest from "./OptimizeTest";
 // import Lifecycle from "./Lifecycle";
 
 function App() {
@@ -45,7 +45,9 @@ function App() {
   // 하위 컴포넌트에서 '이벤트'(->함수)를 현재 데이터를 인자로 전달하여 실행
 
   // 배열 데이터 생성
-  const onCreate = (author, content, emotion) => {
+  // useCallback -> 자식 컴포넌트로 넘어가는 함수 props가 변하지 않으면 현재 컴포넌트가 리렌더링 되더라도 새로 만들어지지 않게
+  // 이때는 "함수형 업데이트"를 사용해야함. 의존성 배열에 빈 배열을 전달하고 함수형 업데이트를 통해 현재 state를 전달해줘야함
+  const onCreate = useCallback((author, content, emotion) => {
     const created_date = new Date().getTime();
 
     // 새로 들어갈 배열 요소
@@ -57,27 +59,27 @@ function App() {
       id: Date.now(),
     };
     // diaryDatasId.current += 1;
-    setdiaryDatas([newItem, ...diaryDatas]); // [새로 들어갈 배열 요소, ...기존 요소들]
-  };
+    setdiaryDatas((diaryDatas) => [newItem, ...diaryDatas]); // [새로 들어갈 배열 요소, ...기존 요소들]
+  }, []);
 
   // 배열 삭제
-  const onRemove = (targetId) => {
-    const deleteData = diaryDatas.filter((data) => {
-      return data.id !== targetId;
-    });
-    setdiaryDatas(deleteData);
-  };
+  const onRemove = useCallback((targetId) => {
+    setdiaryDatas((diaryDatas) =>
+      diaryDatas.filter((data) => data.id !== targetId)
+    );
+  }, []);
 
   // 배열 수정
-  const onEdit = (targetId, editContent) => {
-    const editdiaryDatas = diaryDatas.map((data) => {
-      if (data.id === targetId) {
-        data.content = editContent;
-      }
-      return data;
+  const onEdit = useCallback((targetId, editContent) => {
+    setdiaryDatas((diaryDatas) => {
+      return diaryDatas.map((data) => {
+        if (data.id === targetId) {
+          data.content = editContent;
+        }
+        return data;
+      });
     });
-    setdiaryDatas(editdiaryDatas);
-  };
+  }, []);
 
   // useMemo() -> 연산 최적화 = 필요할 때만 연산을 수행하도록 해줌
   // 감정 비율 분석 -> useMemo 사용 -> 이것은 더 이상 함수가 아님. -> usememo가 리턴하는 값을 그대로 받음.
@@ -93,7 +95,7 @@ function App() {
   return (
     <div className="App">
       {/* <Lifecycle /> */}
-      <OptimizeTest />
+      {/* <OptimizeTest /> */}
       <DiaryEditor onCreate={onCreate} />
       <div>전체 일기 개수 : {diaryDatas.length}</div>
       <div>기분 좋은 일기 개수 : {goodCount}</div>
