@@ -1,7 +1,9 @@
+import { DiaryStateContext } from "./App";
 import DiaryItem from "./DiaryItem";
-import React from "react";
+import React, { useContext } from "react";
 
-const DiaryList = ({ diaryData, onRemove, onEdit }) => {
+const DiaryList = () => {
+  const diaryData = useContext(DiaryStateContext);
   return (
     <div className="DiaryList">
       <div>
@@ -13,13 +15,7 @@ const DiaryList = ({ diaryData, onRemove, onEdit }) => {
           (
             item // jsx에 배열도 들어갈 수 있다. -> {[]} 가능 => 배열을 html에 렌더링할 수 있음
           ) => (
-            <DiaryItem
-              key={item.id}
-              {...item}
-              onRemove={onRemove}
-              onEdit={onEdit}
-              diaryData={diaryData}
-            />
+            <DiaryItem key={item.id} {...item} diaryData={diaryData} />
           )
         )}
       </div>

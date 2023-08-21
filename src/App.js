@@ -1,7 +1,13 @@
 import "./App.css";
 import DiaryEditor from "./DiaryEdtor";
 import DiaryList from "./DiaryList";
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 // import OptimizeTest from "./OptimizeTest";
 // import Lifecycle from "./Lifecycle";
 
@@ -36,6 +42,11 @@ const reducer = (state, action) => {
       return state;
   }
 };
+// Context를 사용하여 하나의 기능을 하는 컴포넌트들을 묶어서 데이터를 공급해줄 수 있다.
+// 이를 통해 ComponentDrilling을 해결할 수 있다.
+// Provider 컴포넌트에 value로 공급해줄 데이터를 보내고 이를 자식 컴포넌트가 받는다.
+export const DiaryStateContext = React.createContext(); // Context를 생성하고 export한다.
+export const DiaryDispatchContext = React.createContext(); // 상태관리 로직은 분리해서 전달해야한다.
 
 function App() {
   // const [diaryDatas, setdiaryDatas] = useState([]);
@@ -128,6 +139,10 @@ function App() {
     // });
   }, []);
 
+  const MemoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
+  }, []);
+
   // useMemo() -> 연산 최적화 = 필요할 때만 연산을 수행하도록 해줌
   // 감정 비율 분석 -> useMemo 사용 -> 이것은 더 이상 함수가 아님. -> usememo가 리턴하는 값을 그대로 받음.
   const emotionAnalysis = useMemo(() => {
@@ -140,16 +155,20 @@ function App() {
 
   const { goodCount, sadCount, goodRatio } = emotionAnalysis; // 값으로 사용해야함.
   return (
-    <div className="App">
-      {/* <Lifecycle /> */}
-      {/* <OptimizeTest /> */}
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 개수 : {diaryDatas.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {sadCount}</div>
-      <div>기분 좋은 일기 비율 : {goodRatio}%</div>
-      <DiaryList diaryData={diaryDatas} onRemove={onRemove} onEdit={onEdit} />
-    </div>
+    <DiaryStateContext.Provider value={diaryDatas}>
+      <DiaryDispatchContext.Provider value={MemoizedDispatches}>
+        <div className="App">
+          {/* <Lifecycle /> */}
+          {/* <OptimizeTest /> */}
+          <DiaryEditor />
+          <div>전체 일기 개수 : {diaryDatas.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {sadCount}</div>
+          <div>기분 좋은 일기 비율 : {goodRatio}%</div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 

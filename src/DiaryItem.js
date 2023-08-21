@@ -1,14 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryItem = ({
-  author,
-  content,
-  emotion,
-  created_date,
-  id,
-  onRemove,
-  onEdit,
-}) => {
+const DiaryItem = ({ author, content, emotion, created_date, id }) => {
+  const { onRemove } = useContext(DiaryDispatchContext);
+  const { onEdit } = useContext(DiaryDispatchContext);
   useEffect(() => {
     console.log(`${author}의 일기 렌더`);
   });

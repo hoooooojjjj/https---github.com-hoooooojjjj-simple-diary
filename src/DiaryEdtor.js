@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryEditor = ({ onCreate }) => {
+const DiaryEditor = () => {
+  const { onCreate } = useContext(DiaryDispatchContext);
   const authorInput = useRef();
   const contentText = useRef();
 
-  useEffect(() => {
-    console.log("lender");
-  });
   // 상태 변화 과정이 동일하다면 묶어줄 수 있다.
   const [state, setstate] = useState({
     author: "",
