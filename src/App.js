@@ -1,12 +1,49 @@
 import "./App.css";
 import DiaryEditor from "./DiaryEdtor";
 import DiaryList from "./DiaryList";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 // import OptimizeTest from "./OptimizeTest";
 // import Lifecycle from "./Lifecycle";
 
+const reducer = (state, action) => {
+  // state와 action 객체를 인자로 받음
+  switch (action.type) {
+    case "INIT": {
+      // 컴포넌트 안에 있던 상태관리 로직을 그대로 넣음
+      // 변경할 state값을 리턴함, 즉 setdate(이 안에 들어갔던 것을 리턴함)
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((data) => data.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((data) => {
+        if (data.id === action.targetId) {
+          data.content = action.editContent;
+        }
+        return data;
+      });
+    }
+    default:
+      return state;
+  }
+};
+
 function App() {
-  const [diaryDatas, setdiaryDatas] = useState([]);
+  // const [diaryDatas, setdiaryDatas] = useState([]);
+
+  // useReducer를 사용하여 복잡한 상태 관리(업데이트) 로직 분리하기
+  // -> "상태변화함수를 사용하는 로직"이 많아지면 컴포넌트가 복잡하고 길어지기 때문에 이를 컴포넌트 밖으로 분리하는 방법
+  const [diaryDatas, dispatch] = useReducer(reducer, []);
+  // [state,상태변화함수(객체를 받음)] = useRudcer(상태를 변화시키는 함수(dispatch를 통해 데이터를 받음), 초깃값)
 
   const dataId = useRef(0);
 
@@ -34,7 +71,11 @@ function App() {
         id: dataId.current++,
       };
     });
-    setdiaryDatas(ininData); // 초기 데이터 배열을 diaryDatas에 할당
+    // action객체를 dispatch함수에 전달
+    // action 객체는 type과 로직을 그대로 옮길 때 필요한 인자 비슷한 것을 객체로 넘김
+    // 그 다음 reducer 함수에 그대로 로직을 전달
+    dispatch({ type: "INIT", data: ininData });
+    // setdiaryDatas(ininData); // 초기 데이터 배열을 diaryDatas에 할당
   };
 
   useEffect(() => {
@@ -48,37 +89,43 @@ function App() {
   // useCallback -> 자식 컴포넌트로 넘어가는 함수 props가 변하지 않으면 현재 컴포넌트가 리렌더링 되더라도 새로 만들어지지 않게
   // 이때는 "함수형 업데이트"를 사용해야함. 의존성 배열에 빈 배열을 전달하고 함수형 업데이트를 통해 현재 state를 전달해줘야함
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: Date.now() },
+    });
+    // const created_date = new Date().getTime();
 
-    // 새로 들어갈 배열 요소
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: Date.now(),
-    };
+    // // 새로 들어갈 배열 요소
+    // const newItem = {
+    //   author,
+    //   content,
+    //   emotion,
+    //   created_date,
+    //   id: Date.now(),
+    // };
     // diaryDatasId.current += 1;
-    setdiaryDatas((diaryDatas) => [newItem, ...diaryDatas]); // [새로 들어갈 배열 요소, ...기존 요소들]
+    // setdiaryDatas((diaryDatas) => [newItem, ...diaryDatas]); // [새로 들어갈 배열 요소, ...기존 요소들]
   }, []);
 
   // 배열 삭제
   const onRemove = useCallback((targetId) => {
-    setdiaryDatas((diaryDatas) =>
-      diaryDatas.filter((data) => data.id !== targetId)
-    );
+    dispatch({ type: "REMOVE", targetId });
+    // setdiaryDatas((diaryDatas) =>
+    //   diaryDatas.filter((data) => data.id !== targetId)
+    // );
   }, []);
 
   // 배열 수정
   const onEdit = useCallback((targetId, editContent) => {
-    setdiaryDatas((diaryDatas) => {
-      return diaryDatas.map((data) => {
-        if (data.id === targetId) {
-          data.content = editContent;
-        }
-        return data;
-      });
-    });
+    dispatch({ type: "EDIT", targetId, editContent });
+    // setdiaryDatas((diaryDatas) => {
+    //   return diaryDatas.map((data) => {
+    //     if (data.id === targetId) {
+    //       data.content = editContent;
+    //     }
+    //     return data;
+    //   });
+    // });
   }, []);
 
   // useMemo() -> 연산 최적화 = 필요할 때만 연산을 수행하도록 해줌

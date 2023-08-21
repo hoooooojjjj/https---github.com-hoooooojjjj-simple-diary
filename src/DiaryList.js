@@ -1,4 +1,5 @@
 import DiaryItem from "./DiaryItem";
+import React from "react";
 
 const DiaryList = ({ diaryData, onRemove, onEdit }) => {
   return (
@@ -30,4 +31,4 @@ DiaryList.defaultProps = {
   diaryData: [],
 };
 
-export default DiaryList;
+export default React.memo(DiaryList);
